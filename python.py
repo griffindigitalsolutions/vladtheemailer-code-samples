@@ -1,43 +1,50 @@
-    import psycopg2
-    import json
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
-    # Database connection settings
-    conn = psycopg2.connect(
-      dbname="your_database",
-      user="your_username",
-      password="your_password",
-      host="localhost"
-    )
+# Email details
+sender_email = "your.sender@yourdomain.com"
+receiver_email = "receiver@example.com"
+api_key = "your-vlad-the-emailer-api-key"
+subject = "Testing my email"
+body = "Body of my email"
 
-    # Fetch user and profile data
-    with conn.cursor() as cur:
-      cur.execute('''
-          SELECT 
-              u.uid, u.email,
-              p.is_public, p.has_avatar, p.avatar_path, p.profile_cover_content_type,
-              p.cover_path, p.first_name, p.last_name, p.full_name
-          FROM users u
-          JOIN profiles p ON u.uid = p.user_id
-          WHERE u.uid = %s
-      ''', (1,))  # Example user ID
-      result = cur.fetchone()
-      
-    if result:
-      user_data = {
-          'uid': result[0],
-          'email': result[1],
-          'profile': {
-              'isPublic': result[2],
-              'hasAvatar': result[3],
-              'avatarPath': result[4],
-              'profileCoverContentType': result[5],
-              'coverPath': result[6],
-              'firstName': result[7],
-              'lastName': result[8],
-              'full_name': result[9],
-          }
-      }
-      user_json = json.dumps(user_data)
-      print(user_json)
-    else:
-      print(json.dumps({'error': 'User not found'}))
+# Create the email
+message = MIMEMultipart()
+message["From"] = sender_email
+message["To"] = receiver_email
+message["Subject"] = subject
+message.attach(MIMEText(body, "plain"))
+
+# Sending the email
+try:
+    server = smtplib.SMTP("smtp-relay.vladtheemailer.com", 587)
+    server.starttls()  # Start TLS for security
+    server.login(sender_email, api_key)
+    text = message.as_string()
+    server.sendmail(sender_email, receiver_email, text)
+    print("Email sent successfully")
+except Exception as e:
+    print(f"Failed to send email: {e}")
+finally:
+    server.quit()
+
+# if you like to use some library:
+# install via pip install yagmail (or other package manager)
+import yagmail
+
+# Email details
+sender_email = "your.sender@yourdomain.com"
+receiver_email = "receiver@example.com"
+subject = "Testing my email"
+body = "Body of my email"
+
+# Create yagmail SMTP client
+yag = yagmail.SMTP(user=sender_email, password="your-vlad-the-emailer-api-key")
+
+# Send the email
+try:
+    yag.send(to=receiver_email, subject=subject, contents=body)
+    print("Email sent successfully")
+except Exception as e:
+    print(f"Failed to send email: {e}")

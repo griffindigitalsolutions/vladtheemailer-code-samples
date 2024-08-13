@@ -1,18 +1,30 @@
-// Importing necessary modules from the Node.js standard library
-import http from "http";
+// using nodemail package. Install with npm: npm install nodemailer
 
-// Define the port number where the server will listen
-const PORT = 3000;
+const nodemailer = require("nodemailer");
 
-// Create an HTTP server
-const server = http.createServer((req, res) => {
-  // Set the response header to indicate content type
-  res.writeHead(200, { "Content-Type": "text/plain" });
-  // Send a response to the client
-  res.end("Hello, Node.js with TypeScript!");
+// Create a transporter
+let transporter = nodemailer.createTransport({
+    host: "smtp-relay.vladtheemailer.com",
+    port: 587,
+    secure: true,
+    auth: {
+        user: "your.sender@yourdomain.com", // Your sender address
+        pass: "your-vlad-the-emailer-api-key" // Your API key
+    }
 });
 
-// Start the server and listen on the specified port
-server.listen(PORT, () => {
-  console.log("Server is running at http://localhost:" + PORT);
+// Email details
+let mailOptions = {
+    from: "your.sender@yourdomain.com", // Sender address
+    to: "receiver@example.com", // List of receivers
+    subject: "Testing my email", // Subject line
+    text: "Body of my email" // Plain text body
+};
+
+// Send the email
+transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+        return console.log("Error:", error);
+    }
+    console.log("Email sent: " + info.response);
 });
