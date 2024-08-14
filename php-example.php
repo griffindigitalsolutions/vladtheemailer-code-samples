@@ -1,39 +1,34 @@
-    <?php>
-    // Database connection settings
-    $pdo = new PDO('mysql:host=localhost;dbname=your_database', 'your_username', 'your_password');
+<?php
+// with PHPMailer. Install via composer require phpmailer/phpmailer
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-    // Fetch user and profile data
-    $stmt = $pdo->prepare('
-      SELECT 
-          u.uid, u.email,
-          p.isPublic, p.hasAvatar, p.avatarPath, p.profileCoverContentType,
-          p.coverPath, p.firstName, p.lastName, p.full_name
-      FROM users u
-      JOIN profiles p ON u.uid = p.user_id
-      WHERE u.uid = :uid
-    ');
-    $stmt->execute(['uid' => 1]); // Example user ID
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+require "vendor/autoload.php";
 
-    if ($result) {
-      $userJson = json_encode([
-          'uid' => $result['uid'],
-          'email' => $result['email'],
-          'profile' => [
-              'isPublic' => $result['isPublic'],
-              'hasAvatar' => $result['hasAvatar'],
-              'avatarPath' => $result['avatarPath'],
-              'profileCoverContentType' => $result['profileCoverContentType'],
-              'coverPath' => $result['coverPath'],
-              'firstName' => $result['firstName'],
-              'lastName' => $result['lastName'],
-              'full_name' => $result['full_name'],
-          ]
-      ]);
-      header('Content-Type: application/json');
-      echo $userJson;
-    } else {
-      echo json_encode(['error' => 'User not found']);
-    }
+// Email details
+$mail = new PHPMailer(true);
+try {
+  // SMTP settings
+  $mail->isSMTP();
+  $mail->Host = "smtp-relay.vladtheemailer.com";
+  $mail->SMTPAuth = true;
+  $mail->Username = "your.sender@yourdomain.com";  // Your email sender
+  $mail->Password = "your-vlad-the-emailer-api-key";  // Your API key
+  $mail->SMTPSecure = "tls";
+  $mail->Port = 587;
 
-    </?php>
+  // Recipients
+  $mail->setFrom("your.sender@yourdomain.com", "Sender Name");
+  $mail->addAddress("receiver_email@example.com", "Receiver Name");
+
+  // Content
+  $mail->isHTML(true);
+  $mail->Subject = "Testing my email";
+  $mail->Body    = "Body of my email";
+  $mail->AltBody = "Body of my email in plain text";
+
+  $mail->send();
+  echo "Email sent successfully.";
+} catch (Exception $e) {
+  echo "Failed to send email. Mailer Error: {$mail->ErrorInfo}";
+}
